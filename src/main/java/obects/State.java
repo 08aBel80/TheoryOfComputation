@@ -1,27 +1,30 @@
 package obects;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class Node {
-    private HashMap<Node, Set<Character>> moves;
-    private HashMap<Node, Set<Character>> backMoves;
+public class State {
+    private HashMap<State, Set<Character>> moves;
+    private HashMap<State, Set<Character>> backMoves;
     private int id;
     private static int idGenerator = 0;
     private int name;
 
-    public Node() {
-        moves = new HashMap<Node, Set<Character>>();
-        backMoves = new HashMap<Node, Set<Character>>();
+    public State() {
+        moves = new HashMap<State, Set<Character>>();
+        backMoves = new HashMap<State, Set<Character>>();
         id = idGenerator++;
     }
 
+    public Set<State> getNextStates(){
+        Set<State> result = new HashSet<State>();
+        result.addAll(this.moves.keySet());
+        return result;
+    }
     public void setName(int name) {
         this.name = name;
     }
 
-    public void addNode(Node other, Character ch) {
+    public void addState(State other, Character ch) {
         if (!moves.containsKey(other)) {
             Set<Character> temp = new HashSet<Character>();
             moves.put(other, temp);
@@ -31,7 +34,7 @@ public class Node {
         moves.get(other).add(ch);
     }
 
-    public void addBackNode(Node other, Character ch) {
+    public void addBackState(State other, Character ch) {
         if (!other.moves.containsKey(this)) {
             Set<Character> temp = new HashSet<Character>();
             other.moves.put(this, temp);
@@ -40,7 +43,7 @@ public class Node {
         backMoves.get(other).add(ch);
     }
 
-    public void addNode(Node other, Set<Character> chars) {
+    public void addState(State other, Set<Character> chars) {
         if (!moves.containsKey(other)) {
             Set<Character> temp = new HashSet<Character>();
             moves.put(other, temp);
@@ -50,7 +53,7 @@ public class Node {
         moves.get(other).addAll(chars);
     }
 
-    public void addBackNode(Node other, Set<Character> chars) {
+    public void addBackState(State other, Set<Character> chars) {
         if (!other.moves.containsKey(this)) {
             Set<Character> temp = new HashSet<Character>();
             other.moves.put(this, temp);
@@ -59,14 +62,14 @@ public class Node {
         backMoves.get(other).addAll(chars);
     }
 
-    public Set<Character> removeNode(Node other) {
+    public Set<Character> removeState(State other) {
         Set<Character> returnSet = moves.get(other);
         moves.remove(other);
         other.backMoves.remove(this);
         return returnSet;
     }
 
-    public Set<Character> removeBackNode(Node other) {
+    public Set<Character> removeBackState(State other) {
         Set<Character> returnSet = backMoves.get(other);
         backMoves.remove(other);
         other.moves.remove(this);
@@ -77,19 +80,19 @@ public class Node {
         return id;
     }
 
-    public HashMap<Node, Set<Character>> getBackMoves() {
+    public HashMap<State, Set<Character>> getBackMoves() {
         return backMoves;
     }
 
-    public HashMap<Node, Set<Character>> getMoves() {
+    public HashMap<State, Set<Character>> getMoves() {
         return moves;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        if (!(o instanceof Node)) return false;
-        Node other = (Node) o;
+        if (!(o instanceof State)) return false;
+        State other = (State) o;
         return this.id == other.id;
     }
 
@@ -100,8 +103,8 @@ public class Node {
 
     public int countMoves() {
         int count = 0;
-        for (Node node : moves.keySet()) {
-            count += moves.get(node).size();
+        for (State state : moves.keySet()) {
+            count += moves.get(state).size();
         }
         return count;
     }
@@ -113,9 +116,15 @@ public class Node {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(countMoves());
-        for (Node node : moves.keySet()) {
-            for (Character ch : moves.get(node)) {
-                builder.append(" " + ch + " " + node.name);
+        ArrayList<State> sortedKeySet = new ArrayList<State>();
+        sortedKeySet.addAll(moves.keySet());
+        Collections.sort(sortedKeySet, (State n1, State n2) -> n1.getName() - n2.getName());
+        for (State state : sortedKeySet) {
+            ArrayList<Character> sortedMoves = new ArrayList<Character>();
+            sortedMoves.addAll(moves.get(state));
+            Collections.sort(sortedMoves);
+            for (Character ch : moves.get(state)) {
+                builder.append(" " + ch + " " + state.name);
             }
         }
         return builder.toString();
